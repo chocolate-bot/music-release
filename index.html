@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>音乐发布</title>
+    <style>
+      :root {
+        --bg: #f7f3ec;
+        --card: #ffffff;
+        --text: #3f3f3f;
+        --text-secondary: #6a6a6a;
+        --border: #a8a8a8;
+        --shadow-color: #b5b5b5;
+        --primary: #7bcbff;
+        --accent: #ffe66a;
+        --border-width: 1.5px;
+        --shadow: 5px 5px 0 0 var(--shadow-color);
+        --shadow-lg: 7px 7px 0 0 var(--shadow-color);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", "Noto Sans SC", "PingFang SC", -apple-system,
+          BlinkMacSystemFont, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .card {
+        width: min(520px, 100%);
+        background: var(--card);
+        border: var(--border-width) solid var(--border);
+        box-shadow: var(--shadow-lg);
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 24px;
+      }
+
+      p {
+        margin: 0 0 16px;
+        color: var(--text-secondary);
+      }
+
+      .list {
+        display: grid;
+        gap: 12px;
+      }
+
+      a {
+        display: block;
+        border: var(--border-width) solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 12px 16px;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 700;
+        background: #fff;
+      }
+
+      a span {
+        display: block;
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
+      a:hover {
+        transform: translateY(-1px);
+      }
+
+      .tag {
+        display: inline-block;
+        margin-top: 8px;
+        background: var(--accent);
+        border: var(--border-width) solid var(--border);
+        padding: 2px 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>音乐发布</h1>
+      <p>两首歌都在这，直接点开听。</p>
+      <div class="list">
+        <a href="spring/">
+          花粉啊花粉
+          <span>单曲 · Spring</span>
+        </a>
+        <a href="music/">
+          随音而行
+          <span>致敬方大同</span>
+        </a>
+      </div>
+      <div class="tag">Orange UI</div>
+    </main>
+  </body>
+</html>

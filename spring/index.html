@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>花粉啊花粉</title>
+    <link rel="icon" type="image/png" href="poll.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f7f3ec;
+        --bg-secondary: #fbfaf8;
+        --card: #ffffff;
+        --text: #3f3f3f;
+        --text-secondary: #6a6a6a;
+        --text-muted: #8a8a8a;
+        --border: #a8a8a8;
+        --border-light: #d8d8d8;
+        --shadow-color: #b5b5b5;
+        --primary: #7bcbff;
+        --primary-hover: #53b8ff;
+        --accent: #ffe66a;
+        --radius: 4px;
+        --radius-lg: 8px;
+        --radius-full: 9999px;
+        --border-width: 1.5px;
+        --shadow-sm: 3px 3px 0 0 var(--shadow-color);
+        --shadow: 5px 5px 0 0 var(--shadow-color);
+        --shadow-lg: 7px 7px 0 0 var(--shadow-color);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", "Noto Sans SC", "PingFang SC", -apple-system,
+          BlinkMacSystemFont, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .song-container {
+        background: linear-gradient(
+          180deg,
+          var(--bg-secondary) 0%,
+          var(--bg) 35%
+        );
+        padding: 1rem;
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 3rem;
+        position: relative;
+      }
+
+      .album-cover {
+        width: 320px;
+        height: 320px;
+        margin: 1rem auto;
+        position: relative;
+        border-radius: 50%;
+        overflow: hidden;
+        border: var(--border-width) solid var(--border);
+        box-shadow: var(--shadow-lg);
+        animation: rotate 20s linear infinite;
+        animation-play-state: paused;
+        background: var(--card);
+        padding: 16px;
+      }
+
+      .album-cover::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #ffffff 0%, #f1ece5 100%);
+        z-index: 1;
+      }
+
+      .album-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        position: relative;
+        z-index: 1;
+      }
+
+      .album-cover.playing {
+        animation-play-state: running;
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .song-title {
+        font-size: 22px;
+        color: var(--text);
+        margin: 1.5rem 0 0.3rem;
+        text-align: center;
+        font-weight: 700;
+      }
+
+      .artist {
+        font-size: 16px;
+        color: var(--text-secondary);
+        text-align: center;
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+
+      .lyrics-button {
+        background: var(--accent);
+        border: var(--border-width) solid var(--border);
+        color: #0d0d0d;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 8px 20px;
+        border-radius: var(--radius-full);
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: var(--shadow);
+        transition: transform 150ms ease;
+      }
+
+      .lyrics-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .lyrics-button svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .main-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 180px;
+      }
+
+      .fixed-player {
+        background: linear-gradient(to top, var(--bg) 70%, transparent);
+        padding: 2rem 1.5rem 0;
+        box-shadow: none;
+        position: fixed;
+        bottom: 50px;
+        left: 0;
+        right: 0;
+        z-index: 2001;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: var(--bg-secondary);
+        border: var(--border-width) solid var(--border);
+        border-radius: var(--radius);
+        margin: 0;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .progress {
+        height: 100%;
+        background: var(--primary);
+        border-radius: var(--radius);
+      }
+
+      .time-info {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: 12px;
+        margin: 0.5rem 0 1rem;
+        font-weight: 600;
+      }
+
+      .player-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4rem;
+        margin: 0.5rem 0;
+      }
+
+      .control-button {
+        background: var(--card);
+        border: var(--border-width) solid var(--border);
+        color: var(--text);
+        cursor: pointer;
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow);
+        transition: transform 150ms ease;
+      }
+
+      .control-button:active {
+        transform: scale(0.98);
+        box-shadow: none;
+      }
+
+      .control-button svg {
+        width: 22px;
+        height: 22px;
+        fill: currentColor;
+      }
+
+      .play-button {
+        font-size: 32px;
+        width: 52px;
+        height: 52px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary);
+        border: var(--border-width) solid var(--border);
+        color: #0d0d0d;
+        cursor: pointer;
+        border-radius: 50%;
+        box-shadow: var(--shadow-lg);
+        transition: transform 150ms ease;
+      }
+
+      .play-button:active {
+        transform: scale(0.98);
+        box-shadow: none;
+      }
+
+      .play-button svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+      }
+
+      .play-button.playing .play-icon {
+        display: none;
+      }
+
+      .play-button.playing .pause-icon {
+        display: block;
+      }
+
+      .play-button.paused .play-icon {
+        display: block;
+      }
+
+      .play-button.paused .pause-icon {
+        display: none;
+      }
+
+      .lyrics-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 200px;
+        background-color: var(--bg);
+        z-index: 2000;
+        display: none;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 2rem 1rem;
+        pointer-events: none;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        scrollbar-width: thin;
+        scrollbar-color: var(--text-muted) transparent;
+        transition: opacity 0.3s ease;
+      }
+
+      .lyrics-container::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .lyrics-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .lyrics-container::-webkit-scrollbar-thumb {
+        background-color: var(--text-muted);
+        border-radius: 3px;
+      }
+
+      .lyrics-container.show {
+        display: block;
+        pointer-events: auto;
+        animation: fadeIn 0.3s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .lyrics-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        background: linear-gradient(to bottom, var(--bg), transparent);
+        z-index: 2001;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        pointer-events: auto;
+      }
+
+      .lyrics-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        text-align: center;
+        flex: 1;
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          sans-serif;
+        letter-spacing: 1px;
+      }
+
+
+      .close-lyrics {
+        background: var(--card);
+        border: var(--border-width) solid var(--border);
+        color: var(--text-secondary);
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow);
+      }
+
+      .close-lyrics svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+
+      .lyrics {
+        margin-top: 60px;
+        padding: 0 1rem;
+        color: var(--text-secondary);
+        line-height: 2;
+        display: block;
+        text-align: center;
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        position: relative;
+      }
+
+      .lyric-line {
+        padding: 1.2rem 0;
+        transition: all 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+        cursor: pointer;
+        opacity: 0.5;
+        font-size: 17px;
+        text-align: center;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        margin: 0.3rem 0;
+        border-radius: 8px;
+        transform: scale(1);
+      }
+
+      .lyric-line:hover {
+        color: var(--text);
+        opacity: 0.9;
+        transform: scale(1.02);
+      }
+
+      .lyric-line.active {
+        color: var(--text);
+        opacity: 1;
+        font-size: 20px;
+        font-weight: 700;
+        transform: scale(1.05);
+        animation: highlight-no-bg 2s ease;
+        margin: 0.5rem 0;
+      }
+
+      .lyric-line.near-active {
+        opacity: 0.8;
+        transform: scale(1.01);
+        transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      }
+
+      .lyric-line.far {
+        opacity: 0.3;
+        transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      }
+
+      @keyframes highlight-no-bg {
+        0% {
+          transform: scale(1);
+          opacity: 0.7;
+        }
+        40% {
+          transform: scale(1.07);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.05);
+          opacity: 1;
+        }
+      }
+
+      #audio-player {
+        position: absolute;
+        opacity: 0;
+        height: 0;
+        width: 0;
+        z-index: -1;
+      }
+
+      @media (max-width: 480px) {
+        .album-cover {
+          width: 280px;
+          height: 280px;
+          padding: 12px;
+        }
+
+        .player-controls {
+          gap: 3rem;
+        }
+
+        .control-button {
+          width: 36px;
+          height: 36px;
+        }
+
+        .play-button {
+          width: 46px;
+          height: 46px;
+        }
+
+        .lyric-line {
+          font-size: 16px;
+          padding: 0.9rem 0;
+          margin: 0.2rem 0;
+        }
+
+        .lyric-line.active {
+          font-size: 18px;
+          margin: 0.4rem 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="song-container">
+      <div class="main-content">
+        <div class="album-cover">
+          <img src="poll.png" alt="专辑封面" />
+        </div>
+        <h1 class="song-title">花粉啊花粉</h1>
+        <div class="artist">- Orange</div>
+        <button class="lyrics-button">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M2 4v16h20V4H2zm2 14V6h16v12H4zm2-6h12v2H6v-2zm0-3h12v2H6V9z"
+            />
+          </svg>
+          歌词
+        </button>
+      </div>
+    </div>
+
+    <div class="lyrics-container">
+      <div class="lyrics-header">
+        <div style="width: 20px"></div>
+        <div class="lyrics-title">花粉啊花粉</div>
+        <button class="close-lyrics">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="lyrics show" id="lyrics">
+        <div class="lyric-line" data-time="1.58">春风吹过杨柳絮</div>
+        <div class="lyric-line" data-time="3.53">鼻子突然就开始抗议</div>
+        <div class="lyric-line" data-time="10.31">阿嚏阿嚏停不下来</div>
+        <div class="lyric-line" data-time="12.74">眼泪鼻涕一起出来</div>
+        <div class="lyric-line" data-time="18.37">别人在晒太阳</div>
+        <div class="lyric-line" data-time="20.87">我戴着口罩像去火星</div>
+        <div class="lyric-line" data-time="25.27">别人在拍美照</div>
+        <div class="lyric-line" data-time="29.21">我眼睛红得像只兔子</div>
+        <div class="lyric-line" data-time="35.47">花粉啊花粉</div>
+        <div class="lyric-line" data-time="37.13">你是春天最深的陷阱</div>
+        <div class="lyric-line" data-time="39.98">美的外表下面藏着毒针</div>
+        <div class="lyric-line" data-time="43.69">一个喷嚏打碎我的尊严</div>
+        <div class="lyric-line" data-time="52.30">花粉啊花粉</div>
+        <div class="lyric-line" data-time="53.92">你是季节最残酷的玩笑</div>
+        <div class="lyric-line" data-time="56.98">我在人间渡劫</div>
+        <div class="lyric-line" data-time="61.11">你在风中逍遥</div>
+        <div class="lyric-line" data-time="69.05">换季的时候我不该出门</div>
+        <div class="lyric-line" data-time="70.64">每次都把自己坑惨了</div>
+        <div class="lyric-line" data-time="72.41">抗过敏药当零食吃</div>
+        <div class="lyric-line" data-time="73.29">纸巾堆成小山</div>
+        <div class="lyric-line" data-time="74.23">朋友圈都在发春游图</div>
+        <div class="lyric-line" data-time="76.16">我窝在家里打喷嚏交响曲</div>
+        <div class="lyric-line" data-time="78.20">世界太精彩</div>
+        <div class="lyric-line" data-time="79.50">我只想在床上装死</div>
+        <div class="lyric-line" data-time="82.04">可是转念一想</div>
+        <div class="lyric-line" data-time="83.54">这是春天给我的特别关注</div>
+        <div class="lyric-line" data-time="86.02">用这种方式提醒我</div>
+        <div class="lyric-line" data-time="89.20">我还活着 还在呼吸</div>
+        <div class="lyric-line" data-time="96.99">花粉啊花粉</div>
+        <div class="lyric-line" data-time="98.69">你是春天最深的陷阱</div>
+        <div class="lyric-line" data-time="101.20">美的外表下面藏着毒针</div>
+        <div class="lyric-line" data-time="105.18">一个喷嚏打碎我的尊严</div>
+        <div class="lyric-line" data-time="113.96">花粉啊花粉</div>
+        <div class="lyric-line" data-time="115.58">你是季节最残酷的玩笑</div>
+        <div class="lyric-line" data-time="118.44">我在人间渡劫</div>
+        <div class="lyric-line" data-time="122.70">你在风中逍遥</div>
+        <div class="lyric-line" data-time="128.74">明年春天</div>
+        <div class="lyric-line" data-time="130.03">我发誓一定不出门</div>
+        <div class="lyric-line" data-time="175.23">（阿嚏）</div>
+      </div>
+    </div>
+
+    <div class="fixed-player">
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+      <div class="time-info">
+        <span id="current-time">0:00</span>
+        <span id="duration">0:00</span>
+      </div>
+      <div class="player-controls">
+        <button class="control-button" id="prev">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+          </svg>
+        </button>
+        <button class="control-button play-button paused" id="play">
+          <svg class="play-icon" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <svg class="pause-icon" viewBox="0 0 24 24">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+          </svg>
+        </button>
+        <button class="control-button" id="next">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+          </svg>
+        </button>
+      </div>
+      <audio id="audio-player" controls preload="auto" playsinline>
+        <source src="poll.mp3" type="audio/mpeg" />
+        您的浏览器不支持音频播放。
+      </audio>
+    </div>
+
+    <script>
+      const audio = document.getElementById("audio-player");
+      const lyrics = document.querySelectorAll(".lyric-line");
+      const playButton = document.getElementById("play");
+      const progressBar = document.getElementById("progress");
+      const progressContainer = document.getElementById("progress-bar");
+      const currentTimeDisplay = document.getElementById("current-time");
+      const durationDisplay = document.getElementById("duration");
+      const prevButton = document.getElementById("prev");
+      const nextButton = document.getElementById("next");
+      const albumCover = document.querySelector(".album-cover");
+      const lyricsButton = document.querySelector(".lyrics-button");
+      const lyricsContainer = document.querySelector(".lyrics-container");
+      const closeLyricsButton = document.querySelector(".close-lyrics");
+      let currentLyric = null;
+      let isPlaying = false;
+      let lastUpdateTime = 0;
+      const UPDATE_INTERVAL = 100;
+
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs.toString().padStart(2, "0")}`;
+      }
+
+      function ensureLyricTimes() {
+        const hasTimes = Array.from(lyrics).some((line) => line.dataset.time);
+        if (hasTimes || !audio.duration) return;
+        const step = audio.duration / Math.max(lyrics.length, 1);
+        lyrics.forEach((line, index) => {
+          line.dataset.time = (index * step).toFixed(2);
+        });
+      }
+
+      function updateLyricStyles(activeLyric) {
+        lyrics.forEach((lyric) => {
+          lyric.classList.remove("active", "near-active", "far");
+        });
+
+        if (!activeLyric) return;
+        activeLyric.classList.add("active");
+        const activeIndex = Array.from(lyrics).indexOf(activeLyric);
+
+        for (
+          let i = Math.max(0, activeIndex - 3);
+          i <= Math.min(lyrics.length - 1, activeIndex + 3);
+          i += 1
+        ) {
+          if (i !== activeIndex) {
+            lyrics[i].classList.add("near-active");
+          }
+        }
+
+        for (let i = 0; i < lyrics.length; i += 1) {
+          if (i < activeIndex - 3 || i > activeIndex + 3) {
+            lyrics[i].classList.add("far");
+          }
+        }
+      }
+
+      function syncLyrics() {
+        if (!lyrics.length) return;
+        const currentTime = audio.currentTime;
+        let active = null;
+        let minTimeDiff = Infinity;
+
+        for (let i = 0; i < lyrics.length; i += 1) {
+          const timeAttr = lyrics[i].dataset.time;
+          if (!timeAttr) continue;
+          const time = parseFloat(timeAttr);
+          if (Number.isNaN(time)) continue;
+          const timeDiff = currentTime - time;
+          if (timeDiff >= -0.5 && timeDiff < minTimeDiff && timeDiff < 15) {
+            minTimeDiff = timeDiff;
+            active = lyrics[i];
+          }
+        }
+
+        if (active && active !== currentLyric) {
+          currentLyric = active;
+          updateLyricStyles(currentLyric);
+          requestAnimationFrame(() => {
+            if (lyricsContainer.classList.contains("show")) {
+              const containerHeight = lyricsContainer.clientHeight;
+              const lyricPosition = active.offsetTop;
+              const lyricHeight = active.clientHeight;
+              const scrollPosition =
+                lyricPosition - containerHeight / 2 + lyricHeight / 2;
+              lyricsContainer.scrollTo({
+                top: scrollPosition,
+                behavior: "smooth",
+              });
+            }
+          });
+        }
+      }
+
+      playButton.addEventListener("click", () => {
+        if (audio.paused) {
+          const playPromise = audio.play();
+          if (playPromise) {
+            playPromise.catch(() => {
+              alert("播放失败，请再点一次。");
+            });
+          }
+        } else {
+          audio.pause();
+        }
+      });
+
+      prevButton.addEventListener("click", () => {
+        audio.currentTime = 0;
+      });
+
+      nextButton.addEventListener("click", () => {
+        audio.currentTime = 0;
+      });
+
+      audio.addEventListener("play", () => {
+        playButton.classList.add("playing");
+        playButton.classList.remove("paused");
+        albumCover.classList.add("playing");
+        isPlaying = true;
+      });
+
+      audio.addEventListener("pause", () => {
+        playButton.classList.remove("playing");
+        playButton.classList.add("paused");
+        albumCover.classList.remove("playing");
+        isPlaying = false;
+      });
+
+      audio.addEventListener("timeupdate", () => {
+        const now = Date.now();
+        if (now - lastUpdateTime >= UPDATE_INTERVAL) {
+          const percent = (audio.currentTime / audio.duration) * 100;
+          progressBar.style.width = `${percent}%`;
+          currentTimeDisplay.textContent = formatTime(audio.currentTime);
+          lastUpdateTime = now;
+        }
+        if (isPlaying) {
+          syncLyrics();
+        }
+      });
+
+      progressContainer.addEventListener("click", (event) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const pos = (event.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        syncLyrics();
+      });
+
+      audio.addEventListener("loadedmetadata", () => {
+        durationDisplay.textContent = formatTime(audio.duration);
+        ensureLyricTimes();
+        syncLyrics();
+      });
+
+      audio.addEventListener("ended", () => {
+        playButton.classList.remove("playing");
+        playButton.classList.add("paused");
+        albumCover.classList.remove("playing");
+        isPlaying = false;
+      });
+
+      lyricsButton.addEventListener("click", () => {
+        lyricsContainer.classList.add("show");
+        document.body.style.overflow = "hidden";
+        syncLyrics();
+      });
+
+      closeLyricsButton.addEventListener("click", () => {
+        lyricsContainer.style.opacity = "0";
+        setTimeout(() => {
+          lyricsContainer.classList.remove("show");
+          document.body.style.overflow = "";
+          lyricsContainer.style.opacity = "";
+        }, 300);
+      });
+
+      lyrics.forEach((lyric) => {
+        lyric.addEventListener("click", () => {
+          const time = parseFloat(lyric.dataset.time || "0");
+          if (!Number.isNaN(time)) {
+            audio.currentTime = time;
+            syncLyrics();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
